@@ -1,6 +1,6 @@
 // Repositório da Lulu — deixa o app instalável e abrindo mesmo sem internet.
 // Os dados (Supabase) não passam por aqui; só os arquivos do próprio site.
-const CACHE = "lulu-v2";
+const CACHE = "lulu-v3";
 const ARQUIVOS = ["./", "index.html", "config.js", "manifest.json", "icon.svg", "icon-192.png", "icon-512.png", "icon-180.png"];
 
 self.addEventListener("install", e => {
