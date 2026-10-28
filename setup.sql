@@ -74,12 +74,17 @@ create table if not exists public.eventos (
   data          date not null,
   data_fim      date,
   hora          text,
-  tipo          text not null default 'escola' check (tipo in ('escola','reuniao','prova','pessoal')),
+  tipo          text not null default 'escola',
   descricao     text,
   aviso_id      uuid references public.avisos(id) on delete set null,
   criado_em     timestamptz not null default now(),
   atualizado_em timestamptz not null default now()
 );
+
+-- lembretes: tipo "lembrete" e aviso no celular (minutos antes)
+alter table public.eventos add column if not exists alarme_min integer;
+alter table public.eventos drop constraint if exists eventos_tipo_check;
+alter table public.eventos add constraint eventos_tipo_check check (tipo in ('escola','reuniao','prova','pessoal','lembrete'));
 
 -- ---------- Banco de questões (múltipla escolha, 4 alternativas) ----------
 create table if not exists public.questoes (

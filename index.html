@@ -93,7 +93,7 @@ main{max-width:720px;margin:0 auto;padding-block:18px 150px;
 .meter-l{display:flex;justify-content:space-between;gap:10px;font-size:14px;color:var(--cover-muted)}
 .meter-l b{color:var(--cover-ink);font-weight:700;white-space:nowrap}
 .meter-l span{text-align:right}
-.quick{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.quick{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
 .quick button{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);color:var(--cover-ink);border-radius:14px;padding:10px 6px;display:grid;justify-items:center;gap:4px;font-size:14px;line-height:1.2}
 .quick button:hover{background:rgba(255,255,255,.18)}
 
@@ -336,6 +336,12 @@ body.palco main{max-width:1180px;padding-block:18px 40px}
 .stage-act{display:flex;gap:12px;flex-wrap:wrap}
 .btn.xl{padding:16px 26px;font-size:20px;border-radius:16px}
 .prep{display:grid;gap:18px;max-width:760px}
+.cel{display:grid;gap:10px}
+.bell svg{width:15px;height:15px;vertical-align:-2px;margin-right:4px;color:var(--amber)}
+.cel a.btn{text-decoration:none;color:inherit}
+.cel a.btn.pri{color:var(--accent-ink)}
+.sheet>h3 svg{vertical-align:-4px;width:20px;height:20px}
+.quick button{font-size:13px}
 .quizcall{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;background:var(--cover);color:var(--cover-ink);border-radius:18px;padding:14px 16px}
 .quizcall .main{display:grid;gap:2px;min-width:0;flex:1 1 200px}
 .quizcall b{font-family:var(--f-display);font-weight:400;font-size:19px}
@@ -438,6 +444,7 @@ const TIPOS = [
   {k:"reuniao", n:"Reunião", c:"#2F76C9"},
   {k:"prova",   n:"Prova",   c:"#C2408A"},
   {k:"pessoal", n:"Pessoal", c:"#22795A"},
+  {k:"lembrete", n:"Lembrete", c:"#B05A08"},
 ];
 const TIPO = Object.fromEntries(TIPOS.map(t=>[t.k,t]));
 const CORES_TURMA = ["#6D3BE0","#C2408A","#22795A","#D9822B","#2F76C9","#8A6D1E","#B5434A","#5B6475"];
@@ -477,6 +484,7 @@ const ICON = {
   user:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>',
   down:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>',
   phone:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M11 18h2"/></svg>',
+  sino:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg>',
   clip:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11l-8.5 8.5a5 5 0 0 1-7-7L14 4a3.5 3.5 0 0 1 5 5l-8.5 8.5a2 2 0 0 1-3-3L15 7"/></svg>',
   pin:'<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M15 3l6 6-3 1-4 4 1 5-2 2-4-4-5 5-1-1 5-5-4-4 2-2 5 1 4-4z"/></svg>',
   left:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>',
@@ -494,11 +502,11 @@ const COLS = {
   aulas:    ["turma_id","titulo","data","bimestre","disciplina","objetivos","conteudo","recursos","avaliacao","bncc","etiquetas","links","anexos","status","reflexao"],
   anotacoes:["titulo","texto","cor","fixada","turma_id"],
   avisos:   ["texto","origem"],
-  eventos:  ["titulo","data","data_fim","hora","tipo","descricao","aviso_id"],
+  eventos:  ["titulo","data","data_fim","hora","tipo","descricao","aviso_id","alarme_min"],
   questoes: ["enunciado","alternativas","correta","explicacao","disciplina","serie","bimestre","dificuldade","bncc","etiquetas"],
   provas:   ["titulo","turma_id","data","valor","instrucoes","questao_ids","embaralhar","semente"],
 };
-const NULOS = ["turma_id","data","data_fim","bimestre","aviso_id","hora"];
+const NULOS = ["turma_id","data","data_fim","bimestre","aviso_id","hora","alarme_min"];
 function limpa(t,row){
   const r={}; COLS[t].forEach(k=>{ let v=row[k]; if(v===undefined) return; if(v===""&&NULOS.includes(k)) v=null; r[k]=v; });
   return r;
@@ -519,8 +527,13 @@ const Nuvem = {
   },
   async salvar(t,row){
     const r = limpa(t,row); r.atualizado_em = new Date().toISOString();
-    const q = row.id ? sb.from(t).update(r).eq("id",row.id).select().single() : sb.from(t).insert(r).select().single();
-    const {data,error} = await q; if(error) throw error;
+    const envia = r => (row.id ? sb.from(t).update(r).eq("id",row.id).select().single() : sb.from(t).insert(r).select().single());
+    let {data,error} = await envia(r);
+    if(error && t==="eventos" && /alarme_min|eventos_tipo_check/.test(error.message||"")){
+      faltaSQL=true; const r2={...r}; delete r2.alarme_min; if(r2.tipo==="lembrete") r2.tipo="pessoal";
+      ({data,error} = await envia(r2)); if(!error) data={...data, alarme_min:r.alarme_min??null};
+    }
+    if(error) throw error;
     const i = D[t].findIndex(x=>x.id===data.id); if(i>=0) D[t][i]=data; else D[t].push(data);
     cache(); return data;
   },
@@ -698,7 +711,9 @@ function prepara(){
     draft._dup = null;
   }
   if(view==="nota-form"){ const n=sel?D.anotacoes.find(x=>x.id===sel):null; draft = n?{...n}:{titulo:"",texto:"",cor:"lilas",fixada:false,turma_id:""}; }
-  if(view==="evento-form"){ const e=sel?D.eventos.find(x=>x.id===sel):null; draft = e?{...e}:{titulo:"",data:ag.sel||hoje(),data_fim:"",hora:"",tipo:"escola",descricao:""}; }
+  if(view==="evento-form"){ const e=sel?D.eventos.find(x=>x.id===sel):null;
+    draft = e?{...e, alarme_min:e.alarme_min??null}:{titulo:"",data:novoLembrete?hoje():(ag.sel||hoje()),data_fim:"",hora:"",tipo:novoLembrete?"lembrete":"escola",descricao:"",alarme_min:novoLembrete?-420:null};
+    novoLembrete=false; }
   if(view==="turma-form"){ const t=sel?D.turmas.find(x=>x.id===sel):null; draft = t?{...t}:{nome:"",ano_letivo:new Date().getFullYear(),serie:"",turno:"Matutino",disciplina:"",cor:CORES_TURMA[D.turmas.length%CORES_TURMA.length],arquivada:false}; }
   if(view==="questao-form"){
     const q=sel?D.questoes.find(x=>x.id===sel):null;
@@ -732,7 +747,7 @@ function render(){
   const f = TELAS[view] || TELAS.inicio;
   document.body.classList.toggle("palco", view==="quiz");
   app.innerHTML = f();
-  const aba = {"aula":"aulas","aula-form":"aulas","duplicar":"aulas","instalar":"mais","nota-form":"notas","evento-form":"agenda","turmas":"mais","turma-form":"mais","avisos":"mais","calendario":"mais","questao-form":"questoes","questoes-colar":"questoes","prova-form":"questoes","quiz":"questoes"}[view]||view;
+  const aba = {"aula":"aulas","aula-form":"aulas","duplicar":"aulas","instalar":"mais","nota-form":"notas","evento-form":"agenda","lembrete-ok":"agenda","turmas":"mais","turma-form":"mais","avisos":"mais","calendario":"mais","questao-form":"questoes","questoes-colar":"questoes","prova-form":"questoes","quiz":"questoes"}[view]||view;
   document.querySelectorAll(".dock button").forEach(b=>b.setAttribute("aria-current", b.dataset.v===aba?"page":"false"));
   fab({inicio:["nova-aula","Nova aula"], aulas:["nova-aula","Nova aula"], agenda:["novo-evento","Novo evento"], notas:["nova-nota","Nova nota"], turmas:["nova-turma","Nova turma"],
     questoes: (selQ.size||provaParada) ? null : qAba==="provas" ? ["nova-prova","Nova prova"] : ["nova-questao","Nova questão"]}[view]);
@@ -769,9 +784,10 @@ TELAS.inicio = () => {
     <div><h1>${saud}, ${esc(nome)}</h1><p class="when">${fmtLonga(h)}</p></div>
     ${meter}
     <div class="quick">
-      <button data-act="nova-aula">${ICON.aula}Nova aula</button>
-      <button data-act="nova-nota">${ICON.nota}Anotar</button>
-      <button data-act="go" data-v="avisos">${ICON.aviso}Colar aviso</button>
+      <button data-act="nova-aula">${ICON.aula}Aula</button>
+      <button data-act="nova-nota">${ICON.nota}Nota</button>
+      <button data-act="novo-lembrete">${ICON.sino}Lembrete</button>
+      <button data-act="go" data-v="avisos">${ICON.aviso}Aviso</button>
       <button data-act="go" data-v="questoes"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M9.5 9.3a2.6 2.6 0 1 1 3.6 2.4c-.7.3-1.1.9-1.1 1.6v.4"/><path d="M12 17.2v.1"/></svg>Quiz</button>
     </div>
   </section>
@@ -795,7 +811,7 @@ function liAula(a){
 }
 function liData(x){
   if(x.e){ const t=TIPO[x.e.tipo]||TIPO.escola;
-    return `<button class="li" data-act="editar-evento" data-id="${esc(x.e.id)}">${datebox(x.s)}<span class="main"><span class="t">${esc(x.t)}</span><span class="s">${esc([fmtLonga(x.s), x.e.hora].filter(Boolean).join(", "))}</span></span><span class="stamp" style="color:${t.c}">${t.n}</span></button>`; }
+    return `<button class="li" data-act="editar-evento" data-id="${esc(x.e.id)}">${datebox(x.s)}<span class="main"><span class="t">${x.e.alarme_min!=null?`<span class="bell" aria-label="Com aviso">${ICON.sino}</span>`:""}${esc(x.t)}</span><span class="s">${esc([fmtLonga(x.s), x.e.hora].filter(Boolean).join(", "))}</span></span><span class="stamp" style="color:${t.c}">${t.n}</span></button>`; }
   const k=KIND[x.k];
   return `<div class="li">${datebox(x.s, x.k==="feriado"?"feriado":x.k==="recesso"?"recesso":"")}<span class="main"><span class="t">${esc(x.t)}</span><span class="s">${fmtLonga(x.s)}</span></span><span class="stamp" style="color:${k.c}">${k.n}</span></div>`;
 }
@@ -999,7 +1015,7 @@ TELAS.agenda = () => {
 TELAS["evento-form"] = () => {
   const e=draft, ed=!!sel, av=e.aviso_id?D.avisos.find(x=>x.id===e.aviso_id):null;
   return `<form class="stack" id="form" data-k="evento" novalidate>
-  <div class="stack" style="gap:8px"><button type="button" class="back" data-act="voltar">${ICON.left}Voltar</button><h1>${ed?"Editar evento":"Novo evento"}</h1></div>
+  <div class="stack" style="gap:8px"><button type="button" class="back" data-act="voltar">${ICON.left}Voltar</button><h1>${e.tipo==="lembrete"?(ed?"Editar lembrete":"Novo lembrete"):(ed?"Editar evento":"Novo evento")}</h1></div>
   <div class="sheet">
     <div class="field"><label for="e-tit">O que é <i>*</i></label><input id="e-tit" data-b="titulo" value="${esc(e.titulo)}" placeholder="Ex.: Reunião de pais e mestres"></div>
     <div class="field"><span class="flabel">Tipo</span><div class="chips wrap">${TIPOS.map(t=>`<button type="button" class="chip" data-act="tipo" data-v="${t.k}" aria-pressed="${e.tipo===t.k}"><span class="dot" style="--c:${t.c}"></span>${t.n}</button>`).join("")}</div></div>
@@ -1009,6 +1025,11 @@ TELAS["evento-form"] = () => {
     </div>
     <div class="field"><label for="e-fim">Termina em (se durar mais de um dia)</label><input id="e-fim" type="date" data-b="data_fim" value="${esc(e.data_fim||"")}"></div>
     <div class="field"><label for="e-desc">Detalhes</label><textarea id="e-desc" data-b="descricao" style="min-height:80px">${esc(e.descricao||"")}</textarea></div>
+  </div>
+  <div class="sheet"><h3>${ICON.sino} Avisar no celular</h3>
+    <div class="chips wrap">${opcoesAlarme(e).map(([m,n])=>`<button type="button" class="chip" data-act="alarme" data-v="${m===null?"":m}" aria-pressed="${(e.alarme_min??null)===m}">${n}</button>`).join("")}</div>
+    <span class="hint">${e.alarme_min==null?"Escolha quando o celular deve avisar.":`O aviso aparece na tela do celular, pelo calendário do telefone, mesmo com o app fechado.${ed?"":" Depois de salvar, toque para colocar no celular."}`}</span>
+    ${ed&&e.alarme_min!=null?botoesCelular(e):""}
     ${av?`<div class="hint">Veio de um aviso ${av.origem==="whatsapp"?"do WhatsApp":av.origem==="instagram"?"do Instagram":""} recebido em ${fmtCurta(av.criado_em.slice(0,10))}.</div>`:""}
   </div>
   ${erro?`<div class="err" role="alert">${esc(erro)}</div>`:""}
@@ -1434,6 +1455,70 @@ function exemplosQuestoes(){
     instrucoes:"Leia com atenção e marque apenas uma alternativa em cada questão.",questao_ids:[qs[0].id,qs[1].id],embaralhar:false,semente:7,...base}];
 }
 
+/* ---- lembretes no celular ---- */
+let novoLembrete=false;
+const ALARME_HORA = [[null,"Não avisar"],[0,"Na hora"],[10,"10 min antes"],[30,"30 min antes"],[60,"1 hora antes"],[1440,"1 dia antes"]];
+const ALARME_DIA  = [[null,"Não avisar"],[-420,"No dia, às 7h"],[360,"Na véspera, às 18h"],[1800,"2 dias antes, às 18h"]];
+const opcoesAlarme = e => e.hora ? ALARME_HORA : ALARME_DIA;
+function ajustaAlarme(e){ if(e.alarme_min==null) return; if(!opcoesAlarme(e).some(([m])=>m===e.alarme_min)) e.alarme_min = e.hora ? 30 : -420; }
+function textoAlarme(e){ const o=opcoesAlarme(e).find(([m])=>m===e.alarme_min); return o?o[1]:""; }
+const ehIOS = () => /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform==="MacIntel" && navigator.maxTouchPoints>1);
+const ehAndroid = () => /Android/i.test(navigator.userAgent);
+function inicioFim(e){
+  const d=parseD(e.data);
+  if(!e.hora) return null;
+  const [h,mi]=e.hora.split(":").map(Number), ini=new Date(d.getFullYear(),d.getMonth(),d.getDate(),h,mi||0);
+  return [ini, new Date(ini.getTime()+3600e3)];
+}
+const utc = d => d.toISOString().replace(/[-:]/g,"").replace(/\.\d{3}/,"");
+const local = d => `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}T${pad(d.getHours())}${pad(d.getMinutes())}00`;
+const icsTxt = s => String(s||"").replace(/\\/g,"\\\\").replace(/;/g,"\;").replace(/,/g,"\\,").replace(/\r?\n/g,"\\n");
+function dobra(l){ const out=[]; while(l.length>73){ out.push(l.slice(0,73)); l=" "+l.slice(73); } out.push(l); return out.join("\r\n"); }
+function icsDe(evs){
+  const L=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Repositorio da Lulu//PT-BR","CALSCALE:GREGORIAN","METHOD:PUBLISH","X-WR-CALNAME:Repositório da Lulu"];
+  const agora=utc(new Date());
+  evs.forEach(e=>{
+    L.push("BEGIN:VEVENT","UID:"+(e.id||uid())+"@repositorio-da-lulu","DTSTAMP:"+agora,"SUMMARY:"+icsTxt(e.titulo));
+    const f=inicioFim(e);
+    if(f) L.push("DTSTART:"+utc(f[0]),"DTEND:"+utc(f[1]));
+    else L.push("DTSTART;VALUE=DATE:"+e.data.replace(/-/g,""),"DTEND;VALUE=DATE:"+addDays(e.data_fim||e.data,1).replace(/-/g,""));
+    if(e.descricao) L.push("DESCRIPTION:"+icsTxt(e.descricao));
+    if(e.alarme_min!=null){ const m=e.alarme_min; L.push("BEGIN:VALARM","ACTION:DISPLAY","DESCRIPTION:"+icsTxt(e.titulo),"TRIGGER:"+(m>=0?"-":"")+"PT"+Math.abs(m)+"M","END:VALARM"); }
+    L.push("END:VEVENT");
+  });
+  L.push("END:VCALENDAR");
+  return L.map(dobra).join("\r\n");
+}
+function baixarIcs(evs,nome){
+  const ics=icsDe(evs), a=document.createElement("a");
+  if(ehIOS()){ a.href="data:text/calendar;charset=utf-8,"+encodeURIComponent(ics); }
+  else { a.href=URL.createObjectURL(new Blob([ics],{type:"text/calendar;charset=utf-8"})); a.download=nome; }
+  document.body.append(a); a.click(); a.remove();
+  toast(ehIOS()?"Toque em Adicionar para salvar no Calendário":"Arquivo baixado: abra para adicionar ao calendário");
+}
+function linkGoogle(e){
+  const f=inicioFim(e);
+  const datas = f ? `${local(f[0])}/${local(f[1])}` : `${e.data.replace(/-/g,"")}/${addDays(e.data_fim||e.data,1).replace(/-/g,"")}`;
+  const det = [e.descricao, e.alarme_min!=null?`Avisar: ${textoAlarme(e).toLowerCase()}.`:"", "Lembrete do Repositório da Lulu"].filter(Boolean).join("\n\n");
+  return "https://calendar.google.com/calendar/render?action=TEMPLATE&text="+encodeURIComponent(e.titulo)+"&dates="+datas+"&details="+encodeURIComponent(det)+(f?"&ctz=America/Sao_Paulo":"");
+}
+function botoesCelular(e){
+  const g=`<a class="btn ${ehIOS()?"":"pri"} full" href="${esc(linkGoogle(e))}" target="_blank" rel="noopener">Adicionar ao Google Agenda</a>`;
+  const i=`<button type="button" class="btn ${ehIOS()?"pri":""} full" data-act="cel-ics" data-id="${esc(e.id||"")}">Adicionar ao Calendário do iPhone</button>`;
+  return `<div class="cel">${ehIOS()?i+g:g+i}
+    <p class="hint">${ehIOS()
+      ?"No iPhone: toque em Adicionar ao Calendário do iPhone e depois em Adicionar. O aviso já vai programado."
+      :"No Android: o Google Agenda abre com o lembrete preenchido. Toque em Salvar. Confira a notificação no próprio lembrete (o Google Agenda usa o aviso padrão, que dá para mudar ali)."}</p></div>`;
+}
+TELAS["lembrete-ok"] = () => {
+  const e=D.eventos.find(x=>x.id===sel); if(!e) return TELAS.agenda();
+  return `<div class="stack"><div class="stack" style="gap:8px"><h1>Agora coloque no celular</h1>
+    <p class="muted">Para o aviso aparecer na tela do celular mesmo com o app fechado, adicione este lembrete ao calendário do telefone. É um toque só.</p></div>
+    <div class="sheet"><div class="row">${datebox(e.data)}<div class="main" style="min-width:0;flex:1"><b>${esc(e.titulo)}</b><p class="hint">${esc([fmtLonga(e.data), e.hora, textoAlarme(e)&&"aviso: "+textoAlarme(e).toLowerCase()].filter(Boolean).join(", "))}</p></div></div>
+    ${botoesCelular(e)}</div>
+    <button class="btn" data-act="go" data-v="agenda">Pronto</button></div>`;
+};
+
 /* ---- mais ---- */
 TELAS.mais = () => {
   const item=(act,v,ic,t,s)=>`<button class="li" data-act="${act}" ${v?`data-v="${v}"`:""}><span class="ic">${ic}</span><span class="main"><span class="t">${t}</span><span class="s">${s}</span></span>${ICON.right}</button>`;
@@ -1442,6 +1527,7 @@ TELAS.mais = () => {
     ${item("go","turmas",ICON.turma,"Turmas",`${D.turmas.length} cadastrada(s)`)}
     ${item("go","avisos",ICON.aviso,"Avisos da escola","WhatsApp, Instagram e recados")}
     ${item("go","calendario",ICON.cal,"Calendário letivo e perfil","Bimestres, nome e escola")}
+    ${item("todos-ics","",ICON.sino,"Colocar todos os lembretes no celular","Para iPhone ou para trocar de aparelho")}
     ${item("exportar","",ICON.down,"Baixar cópia de segurança","Todas as aulas, notas e eventos em um arquivo")}
     ${item("go","instalar",ICON.phone,"Instalar no celular","Para abrir como app e receber compartilhamentos")}
   </div>
@@ -1555,6 +1641,11 @@ const A = {
   "nova-nota": () => go("nota-form"),
   "editar-nota": el => go("nota-form", el.dataset.id),
   "novo-evento": () => go("evento-form"),
+  "novo-lembrete": () => { novoLembrete=true; go("evento-form"); },
+  alarme: el => { draft.alarme_min = el.dataset.v==="" ? null : +el.dataset.v; render(); },
+  "cel-ics": el => { const ev=D.eventos.find(x=>x.id===el.dataset.id)||draft; baixarIcs([ev], "lembrete-"+(norm(ev.titulo).replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,40)||"lulu")+".ics"); },
+  "todos-ics": () => { const h=hoje(); const evs=D.eventos.filter(e=>e.alarme_min!=null && (e.data_fim||e.data)>=h);
+    if(!evs.length){ toast("Nenhum lembrete futuro com aviso."); return; } baixarIcs(evs,"lembretes-lulu.ics"); },
   "editar-evento": el => go("evento-form", el.dataset.id),
   "nova-turma": () => { if(view==="aula-form"){ voltarAula = draft; } go("turma-form"); },
   "editar-turma": el => go("turma-form", el.dataset.id),
@@ -1656,6 +1747,7 @@ app.addEventListener("input", e => {
   if(el.dataset.aviso){ aviso.texto=el.value; guardaPos(); render(); return; }
   if(el.dataset.b && draft){
     const k=el.dataset.b; draft[k] = el.dataset.lista ? lista(el.value) : el.value;
+    if(view==="evento-form" && k==="hora"){ ajustaAlarme(draft); clearTimeout(window._rh); window._rh=setTimeout(()=>{ guardaPos(); render(); },400); }
     if(k==="data" && view==="aula-form" && !draft._bimManual){ draft.bimestre = bimestreDe(draft.data); guardaPos(); render(); }
     if(view==="prova-form"){ const pv=document.getElementById("pv"); if(pv) pv.innerHTML=provaHTML(draft); }
     if(k==="data" && view==="evento-form" && draft.data_fim && draft.data_fim<draft.data) draft.data_fim="";
@@ -1707,9 +1799,12 @@ app.addEventListener("submit", async e => {
       ocupado(); await DB.salvar("anotacoes",{...draft,id:sel||undefined}); toast(sel?"Nota salva":"Nota guardada"); go("notas");
     }
     if(k==="evento"){
+      const antes = sel ? {...(D.eventos.find(x=>x.id===sel)||{})} : null;
       if(!draft.titulo.trim()||!draft.data){ erro="Informe o nome e a data do evento."; return render(); }
-      ocupado(); await DB.salvar("eventos",{...draft,id:sel||undefined}); ag.sel=draft.data; const d=parseD(draft.data); ag.y=d.getFullYear(); ag.m=d.getMonth();
-      toast(sel?"Evento salvo":"Adicionado à agenda"); go("agenda");
+      ocupado(); const salvo=await DB.salvar("eventos",{...draft,id:sel||undefined}); ag.sel=draft.data; const d=parseD(draft.data); ag.y=d.getFullYear(); ag.m=d.getMonth();
+      if(draft.alarme_min!=null){ const nz=v=>(v===""||v===undefined)?null:v; const mudou = !antes || ["data","data_fim","hora","titulo","alarme_min","descricao"].some(k=>nz(antes[k])!==nz(draft[k]));
+        if(mudou){ history.replaceState({v:"lembrete-ok",id:salvo.id,d:history.state?.d||0},""); view="lembrete-ok"; sel=salvo.id; render(); window.scrollTo(0,0); return; } }
+      toast(sel?"Salvo":"Adicionado à agenda"); go("agenda");
     }
     if(k==="turma"){
       const ano=parseInt(draft.ano_letivo,10);

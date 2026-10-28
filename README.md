@@ -12,6 +12,7 @@ Aulas, anotações e calendário escolar de uma professora da rede pública do D
 - **Busca** por texto e filtros por turma, ano letivo, bimestre e situação (planejada/dada).
 - **"Como foi a aula"**: reflexão depois de dar a aula; e **Usar em outra turma** para reaproveitar o planejamento.
 - **Agenda** com o calendário escolar 2026 da SEEDF e feriados já carregados, mais os eventos dela.
+- **Lembretes no celular**: qualquer evento pode ter aviso (na hora, 10 min, 30 min, 1 h, 1 dia antes; ou no dia às 7h / na véspera às 18h). Um toque coloca no Google Agenda ou no Calendário do iPhone, e o próprio celular mostra a notificação, mesmo com o app fechado.
 - **Avisos da escola**: cola ou compartilha uma mensagem, o app encontra datas e horários e manda para a agenda. Também lê texto de prints (no próprio aparelho).
 - **Anotações** coloridas, que podem ser fixadas no início e ligadas a uma turma.
 - **Turmas** por ano letivo, com cor própria.
@@ -25,13 +26,13 @@ Aulas, anotações e calendário escolar de uma professora da rede pública do D
 ### 1. Supabase (banco de dados)
 1. Crie uma conta em supabase.com e um projeto novo (região São Paulo).
 2. Vá em **SQL Editor > New query**, cole todo o conteúdo de `setup.sql` e clique em **Run**.
-3. Em **Authentication > URL Configuration**, coloque em *Site URL* o endereço do GitHub Pages (passo 2), por exemplo `https://guilherme-lucas7.github.io/repositorio-da-lulu/`.
+3. Em **Authentication > URL Configuration**, coloque em *Site URL* o endereço do GitHub Pages (passo 2), por exemplo `https://SEU-USUARIO.github.io/repositorio-da-lulu/`.
 4. Em **Project Settings > API**, copie a *Project URL* e a chave *anon/publishable* para o `config.js`.
 
 ### 2. GitHub Pages (o site)
 1. Crie um repositório chamado `repositorio-da-lulu` e envie todos os arquivos desta pasta.
 2. Em **Settings > Pages**, escolha *Deploy from a branch*, branch `main`, pasta `/ (root)`.
-3. Em um ou dois minutos o app fica em `https://guilherme-lucas7.github.io/repositorio-da-lulu/`.
+3. Em um ou dois minutos o app fica em `https://SEU-USUARIO.github.io/repositorio-da-lulu/`.
 
 ### 3. Primeiro acesso
 Abra o endereço no celular dela, toque em **Criar conta**, confirme o e-mail e entre.
