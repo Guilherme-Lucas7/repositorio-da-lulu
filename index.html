@@ -13,7 +13,9 @@
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://ogbhbbhofjpzqhywujwm.supabase.co" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" media="print" onload="this.media='all'">
 <style>
 /* Layout: caderno de uma coluna para celular. Capa roxa no topo (cor de tinta de mimeógrafo),
    páginas lilás-claro, doca flutuante embaixo e um botão de ação que muda conforme a tela. */
@@ -1969,10 +1971,22 @@ function lerCompartilhado(){
     try{ history.replaceState({v:view,d:0},""); }catch(e){}
     render(); return;
   }
-  DB=Nuvem; sb=supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_KEY);
+  DB=Nuvem;
+  // abre na hora com a última cópia guardada enquanto confere a conta e busca o que mudou
+  let provisoria=false;
+  try{
+    const ref=new URL(cfg.SUPABASE_URL).hostname.split(".")[0];
+    const tok=JSON.parse(localStorage.getItem(`sb-${ref}-auth-token`)||"null");
+    const c=tok?.user?.id && ls.get("lulu-cache-"+tok.user.id);
+    if(c && !compartilhou){ Object.assign(D,c); session={user:tok.user}; provisoria=true; view="inicio";
+      try{ history.replaceState({v:view,d:0},""); }catch(e){} render(); sync("", "Atualizando"); }
+  }catch(e){}
+  sb=supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_KEY);
   sb.auth.onAuthStateChange((ev,s)=>{
     if(ev==="PASSWORD_RECOVERY"){ recuperando=true; }
-    const tinha=!!session; session=s;
+    const eraProvisoria = provisoria && s && session?.user?.id===s.user?.id; provisoria=false;
+    const tinha=!!session && !eraProvisoria; session=s;
+    if(eraProvisoria){ setTimeout(carregar,0); return; }
     if(session && !tinha){
       const c=ls.get("lulu-cache-"+session.user.id); if(c) Object.assign(D,c);
       view = compartilhou ? "avisos" : "inicio";
