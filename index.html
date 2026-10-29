@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
 <title>Repositório da Lulu</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="theme-color" content="#3A1D72">
@@ -371,6 +371,9 @@ div.opt{cursor:default}
 .stage-end .big{font-family:var(--f-display);font-size:clamp(48px,9vw,110px);line-height:1}
 
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+/* sem zoom ao tocar: toque duplo não amplia e o iPhone não aproxima ao digitar */
+html{touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+@supports (-webkit-touch-callout:none){input,select,textarea{font-size:16px!important}}
 </style>
 </head>
 <body>
