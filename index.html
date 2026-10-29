@@ -6,6 +6,7 @@
 <title>Repositório da Lulu</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="theme-color" content="#3A1D72">
+<script>try{var t=localStorage.getItem("lulu-tema");if(t==="dark"||t==="light")document.documentElement.dataset.theme=t;}catch(e){}</script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Lulu">
 <link rel="manifest" href="manifest.json">
@@ -66,7 +67,11 @@ p{margin:0}
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 .brand{font-family:var(--f-display);font-size:19px;line-height:1.1;display:flex;align-items:center;gap:10px;background:none;border:0;padding:0;color:inherit}
 .brand svg{flex:none}
-.sync{margin-left:auto;font-size:13px;color:var(--cover-muted);display:flex;align-items:center;gap:6px;white-space:nowrap}
+.brand{margin-right:auto;text-align:left;white-space:nowrap;min-width:0}
+@media (max-width:420px){.sync span{display:none}.brand{font-size:18px}}
+.tema{background:none;border:1px solid color-mix(in srgb,var(--cover-ink) 35%,transparent);color:var(--cover-ink);border-radius:10px;width:36px;height:34px;display:grid;place-items:center;padding:0;flex:none}
+.tema:hover{background:rgba(255,255,255,.1)}
+.sync{font-size:13px;color:var(--cover-muted);display:flex;align-items:center;gap:6px;white-space:nowrap}
 .sync i{width:8px;height:8px;border-radius:50%;background:var(--cover-muted);display:inline-block}
 .sync.on i{background:var(--giz)}
 .sync.off i{background:#ff8a9e}
@@ -239,6 +244,7 @@ button.li:hover{background:var(--accent-soft)}
 .login .seal{width:64px;height:64px}
 .seg{display:grid;grid-template-columns:1fr 1fr;background:var(--accent-soft);border-radius:14px;padding:4px;gap:4px}
 .seg button{border:0;background:none;border-radius:10px;padding:9px;font-weight:700;color:var(--accent-text)}
+.seg.seg3{grid-template-columns:repeat(3,1fr)}
 .seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
 
 
@@ -341,7 +347,8 @@ body.palco main{max-width:1180px;padding-block:18px 40px}
 .cel a.btn{text-decoration:none;color:inherit}
 .cel a.btn.pri{color:var(--accent-ink)}
 .sheet>h3 svg{vertical-align:-4px;width:20px;height:20px}
-.quick button{font-size:13px}
+.quick button{font-size:12px;padding:10px 2px;min-width:0;white-space:nowrap;letter-spacing:-.01em}
+@media (max-width:380px){.quick button{font-size:11px}}
 .quizcall{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;background:var(--cover);color:var(--cover-ink);border-radius:18px;padding:14px 16px}
 .quizcall .main{display:grid;gap:2px;min-width:0;flex:1 1 200px}
 .quizcall b{font-family:var(--f-display);font-weight:400;font-size:19px}
@@ -374,6 +381,7 @@ div.opt{cursor:default}
     <span>Repositório da Lulu</span>
   </button>
   <div class="sync" id="sync" hidden><i></i><span id="synct"></span></div>
+  <button class="tema" id="tema" type="button" aria-label="Alternar modo claro e escuro" title="Modo claro ou escuro"></button>
 </div></header>
 
 <main id="app"><p class="muted">Abrindo o caderno…</p></main>
@@ -1531,6 +1539,9 @@ TELAS.mais = () => {
     ${item("exportar","",ICON.down,"Baixar cópia de segurança","Todas as aulas, notas e eventos em um arquivo")}
     ${item("go","instalar",ICON.phone,"Instalar no celular","Para abrir como app e receber compartilhamentos")}
   </div>
+  <div class="sheet"><h3>Aparência</h3>
+    <div class="seg seg3" role="radiogroup" aria-label="Aparência">${[["auto","Automático"],["light","Claro"],["dark","Escuro"]].map(([k,n])=>`<button type="button" role="radio" data-act="tema" data-v="${k}" aria-pressed="${temaEscolhido()===k}" aria-checked="${temaEscolhido()===k}">${n}</button>`).join("")}</div>
+    <p class="hint">Automático segue o modo claro ou escuro do celular.</p></div>
   <div class="sheet"><div class="row">${ICON.user}<div class="main" style="min-width:0;flex:1"><b>${demo?"Modo demonstração":esc(session?.user?.email||"")}</b><p class="hint">${demo?"Nada está sendo enviado para a nuvem.":"Seus dados ficam guardados no Supabase."}</p></div>
   ${demo?`<button class="btn sm" data-act="reset-demo">Recomeçar exemplos</button>`:`<button class="btn sm" data-act="sair">Sair</button>`}</div></div>
   </div>`;
@@ -1580,6 +1591,7 @@ function vNovaSenha(){
 /* ---------- ações ---------- */
 const A = {
   go: el => go(el.dataset.v),
+  tema: el => { aplicaTema(el.dataset.v); render(); },
   "q-aba": el => { qAba=el.dataset.v; render(); },
   "nova-questao": () => go("questao-form"),
   "editar-questao": el => go("questao-form", el.dataset.id),
@@ -1897,6 +1909,26 @@ async function novaSenha(){
   if(error){ auth.msg="Não foi possível trocar a senha. Peça um novo link."; render(); return; }
   recuperando=false; auth={modo:"entrar",msg:"",ok:""}; toast("Senha alterada"); go("inicio");
 }
+
+/* ---------- modo claro e escuro ---------- */
+const SOL='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
+const LUA='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>';
+const escuroSistema = () => matchMedia("(prefers-color-scheme: dark)").matches;
+const temaEscolhido = () => document.documentElement.dataset.theme || "auto";
+const temaAtual = () => document.documentElement.dataset.theme || (escuroSistema() ? "dark" : "light");
+function pintaTema(){
+  const d = temaAtual()==="dark", b=document.getElementById("tema");
+  b.innerHTML = d ? SOL : LUA; b.setAttribute("aria-label", d ? "Mudar para o modo claro" : "Mudar para o modo escuro");
+  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", d ? "#28134F" : "#3A1D72");
+}
+function aplicaTema(t){
+  if(t==="auto") delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme=t;
+  try{ if(t==="auto") localStorage.removeItem("lulu-tema"); else localStorage.setItem("lulu-tema",t); }catch(e){}
+  pintaTema();
+}
+document.getElementById("tema").addEventListener("click", ()=>{ aplicaTema(temaAtual()==="dark" ? "light" : "dark"); render(); });
+matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", pintaTema);
+pintaTema();
 
 /* ---------- carregamento ---------- */
 async function carregar(){
