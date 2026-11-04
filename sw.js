@@ -1,6 +1,6 @@
 // Repositório da Lulu — abre na hora, mesmo com internet lenta ou sem internet.
 // Guarda no aparelho os arquivos do app e as bibliotecas; os dados (Supabase) não passam por aqui.
-const CACHE = "lulu-v8";
+const CACHE = "lulu-v9";
 const ARQUIVOS = ["./", "index.html", "config.js", "manifest.json", "icon.svg", "icon-192.png", "icon-512.png", "icon-180.png"];
 const EXTERNOS = ["https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"];
 const CDN = /^https:\/\/(cdn\.jsdelivr\.net|fonts\.googleapis\.com|fonts\.gstatic\.com)\//;
